@@ -47,6 +47,7 @@ processResources {
         expand props
     }
 }
+
 jar {
     archiveClassifier = "original"
 }
