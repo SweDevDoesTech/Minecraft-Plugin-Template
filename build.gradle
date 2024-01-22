@@ -1,0 +1,97 @@
+plugins {
+    id "java"
+
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+}
+
+group = "com.group"
+version = "1.0.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "spigotmc-repo"
+        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+    }
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/groups/public/"
+    }
+    maven {
+        url = "https://repo.codemc.io/repository/maven-public"
+    }
+}
+
+dependencies {
+    compileOnly "org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT"
+
+    implementation "de.tr7zw:item-nbt-api:2.12.2"
+}
+
+def targetJavaVersion = 17
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset "UTF-8"
+    filesMatching("plugin.yml") {
+        expand props
+    }
+}
+jar {
+    archiveClassifier = "original"
+}
+
+shadowJar {
+    archiveClassifier = ""
+
+    relocate "de.tr7zw.changeme.nbtapi", "${group}.nbtapi"
+}
+
+build.dependsOn shadowJar
+
+tasks.register("copyPluginToSpigotServer", Copy) {
+    dependsOn build
+
+    from "build/libs/${shadowJar.getArchiveFileName().get()}"
+    into "server_spigot/plugins"
+}
+
+tasks.register("copyPluginToPaperServer", Copy) {
+    dependsOn build
+
+    from "build/libs/${shadowJar.getArchiveFileName().get()}"
+    into "server_paper/plugins"
+}
+
+tasks.register("runSpigotServer", JavaExec) {
+    dependsOn copyPluginToSpigotServer
+    main = "-jar";
+    args = [
+            "server.jar",
+    ]
+    workingDir = file "server_spigot"
+}
+
+tasks.register("runPaperServer", JavaExec) {
+    dependsOn copyPluginToPaperServer
+    main = "-jar";
+    args = [
+            "server.jar",
+    ]
+    workingDir = file "server_paper"
+}

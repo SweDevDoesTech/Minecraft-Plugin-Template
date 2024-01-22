@@ -1,0 +1,6 @@
+name: TemplateTest
+version: '${version}'
+main: com.group.template.Template
+api-version: '1.20'
+authors: [SweDev]
+description: Put description here
