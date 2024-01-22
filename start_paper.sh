@@ -1,3 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-java -Xmx2G -jar server_paper/server.jar nogui
+cd server_paper
+java -Xmx2G -jar server.jar nogui
+cd ..

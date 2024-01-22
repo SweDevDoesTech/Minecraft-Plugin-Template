@@ -1,3 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-java -Xmx2G -jar server_spigot/server.jar nogui
+cd server_spigot
+java -Xmx2G -jar server.jar nogui
+cd ..
